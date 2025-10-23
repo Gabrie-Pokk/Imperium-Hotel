@@ -6,6 +6,7 @@ require('dotenv').config();
 
 // Import routes
 const usersRoutes = require('./routes/users');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -53,6 +54,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/users', usersRoutes);
+app.use('/api/auth', authRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -63,6 +65,7 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/health',
       users: '/api/users',
+      auth: '/api/auth',
       documentation: '/api/docs'
     }
   });

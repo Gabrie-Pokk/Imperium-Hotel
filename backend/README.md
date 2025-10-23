@@ -5,10 +5,12 @@ API REST para gerenciamento de usuários do sistema Imperium Hotel, desenvolvida
 ## 🚀 Funcionalidades
 
 - **CRUD completo de usuários** com validação de dados
+- **Sistema de cadastro** com verificação de email/CPF únicos
 - **Autenticação** com hash de senhas (bcrypt)
+- **Soft delete** completo com restauração
 - **Paginação** para listagem de usuários
-- **Soft delete** para exclusão lógica
 - **Busca** de usuários por nome ou email
+- **Verificação de disponibilidade** de email/CPF
 - **Rate limiting** para proteção contra spam
 - **Validação robusta** com Joi
 - **Logs** de requisições
@@ -65,10 +67,58 @@ npm start
 
 ### Base URL: `http://localhost:3000`
 
+### 🔐 Autenticação e Cadastro
+
+#### `POST /api/auth/register`
+Cadastra novo usuário com validação completa.
+
+**Body:**
+```json
+{
+  "nome": "João Silva",
+  "email": "joao@email.com",
+  "cpf": "12345678901",
+  "telefone": "11999999999",
+  "endereco": "Rua das Flores, 123",
+  "senha": "senha123"
+}
+```
+
+#### `POST /api/auth/login`
+Autentica usuário.
+
+**Body:**
+```json
+{
+  "email": "joao@email.com",
+  "senha": "senha123"
+}
+```
+
+#### `POST /api/auth/check-email`
+Verifica se email está disponível.
+
+**Body:**
+```json
+{
+  "email": "joao@email.com"
+}
+```
+
+#### `POST /api/auth/check-cpf`
+Verifica se CPF está disponível.
+
+**Body:**
+```json
+{
+  "cpf": "12345678901"
+}
+```
+
 ### 👥 Usuários
 
 #### `GET /api/users`
-Lista todos os usuários com paginação.
+Lista todos os usuários ativos com paginação.
 
 **Query Parameters:**
 - `page` (opcional) - Número da página (padrão: 1)
@@ -141,6 +191,21 @@ Busca usuários por nome ou email.
 GET /api/users/search?q=joão&page=1&limit=10
 ```
 
+#### `GET /api/users/deleted`
+Lista usuários deletados (soft delete).
+
+**Query Parameters:**
+- `page` (opcional) - Número da página (padrão: 1)
+- `limit` (opcional) - Itens por página (padrão: 10, máx: 100)
+
+#### `POST /api/users/:id/restore`
+Restaura usuário deletado.
+
+**Exemplo:**
+```bash
+POST /api/users/123e4567-e89b-12d3-a456-426614174000/restore
+```
+
 ### 🏥 Health Check
 
 #### `GET /health`
@@ -148,9 +213,9 @@ Verifica se a API está funcionando.
 
 ## 📝 Exemplos de Uso
 
-### Criar usuário:
+### Cadastrar usuário:
 ```bash
-curl -X POST http://localhost:3000/api/users \
+curl -X POST http://localhost:3000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "nome": "Maria Silva",
@@ -160,6 +225,20 @@ curl -X POST http://localhost:3000/api/users \
     "endereco": "Av. Paulista, 1000",
     "senha": "minhasenha123"
   }'
+```
+
+### Verificar disponibilidade de email:
+```bash
+curl -X POST http://localhost:3000/api/auth/check-email \
+  -H "Content-Type: application/json" \
+  -d '{"email": "maria@email.com"}'
+```
+
+### Verificar disponibilidade de CPF:
+```bash
+curl -X POST http://localhost:3000/api/auth/check-cpf \
+  -H "Content-Type: application/json" \
+  -d '{"cpf": "98765432100"}'
 ```
 
 ### Listar usuários:
@@ -174,12 +253,27 @@ curl http://localhost:3000/api/users/search?q=maria
 
 ### Login:
 ```bash
-curl -X POST http://localhost:3000/api/users/login \
+curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "maria@email.com",
     "senha": "minhasenha123"
   }'
+```
+
+### Listar usuários deletados:
+```bash
+curl http://localhost:3000/api/users/deleted?page=1&limit=5
+```
+
+### Restaurar usuário deletado:
+```bash
+curl -X POST http://localhost:3000/api/users/123e4567-e89b-12d3-a456-426614174000/restore
+```
+
+### Excluir usuário (soft delete):
+```bash
+curl -X DELETE http://localhost:3000/api/users/123e4567-e89b-12d3-a456-426614174000
 ```
 
 ## 🔒 Segurança

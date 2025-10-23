@@ -251,4 +251,71 @@ router.get('/search', validatePagination, async (req, res) => {
   }
 });
 
+// GET /api/users/deleted - List soft deleted users
+router.get('/deleted', validatePagination, async (req, res) => {
+  try {
+    const { page, limit } = req.pagination;
+    const result = await User.findDeleted(page, limit);
+    
+    res.json({
+      success: true,
+      message: 'Usuários deletados listados com sucesso',
+      data: {
+        users: result.users.map(user => user.toJSON()),
+        pagination: {
+          page: result.page,
+          limit: result.limit,
+          total: result.total,
+          totalPages: result.totalPages
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error listing deleted users:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor',
+      error: error.message
+    });
+  }
+});
+
+// POST /api/users/:id/restore - Restore soft deleted user
+router.post('/:id/restore', validateUUID, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const restoredBy = req.user?.id || id; // Use current user ID or self-restore
+    
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuário não encontrado'
+      });
+    }
+    
+    if (user.active) {
+      return res.status(400).json({
+        success: false,
+        message: 'Usuário já está ativo'
+      });
+    }
+    
+    await user.restore(restoredBy);
+    
+    res.json({
+      success: true,
+      message: 'Usuário restaurado com sucesso',
+      data: user.toJSON()
+    });
+  } catch (error) {
+    console.error('Error restoring user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

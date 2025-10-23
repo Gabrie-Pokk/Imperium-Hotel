@@ -78,6 +78,24 @@ class User {
     }
   }
 
+  // Get user by CPF
+  static async findByCPF(cpf) {
+    try {
+      const { data, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('cpf', cpf)
+        .eq('active', true)
+        .is('deleted_at', null)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return data ? new User(data) : null;
+    } catch (error) {
+      throw new Error(`Error finding user by CPF: ${error.message}`);
+    }
+  }
+
   // Get all users with pagination
   static async findAll(page = 1, limit = 10) {
     try {
@@ -158,6 +176,58 @@ class User {
       return this;
     } catch (error) {
       throw new Error(`Error deleting user: ${error.message}`);
+    }
+  }
+
+  // Restore soft deleted user
+  async restore(restoredBy) {
+    try {
+      const { data, error } = await supabase
+        .from('usuarios')
+        .update({
+          active: true,
+          deleted_at: null,
+          deleted_by: null
+        })
+        .eq('id_usuario', this.id_usuario)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      this.active = true;
+      this.deleted_at = null;
+      this.deleted_by = null;
+      return this;
+    } catch (error) {
+      throw new Error(`Error restoring user: ${error.message}`);
+    }
+  }
+
+  // Get soft deleted users
+  static async findDeleted(page = 1, limit = 10) {
+    try {
+      const offset = (page - 1) * limit;
+      
+      const { data, error, count } = await supabase
+        .from('usuarios')
+        .select('*', { count: 'exact' })
+        .eq('active', false)
+        .not('deleted_at', 'is', null)
+        .order('deleted_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      if (error) throw error;
+      
+      return {
+        users: data.map(user => new User(user)),
+        total: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit)
+      };
+    } catch (error) {
+      throw new Error(`Error finding deleted users: ${error.message}`);
     }
   }
 
