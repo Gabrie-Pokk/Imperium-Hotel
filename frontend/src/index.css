@@ -4,11 +4,12 @@
 
 @layer base {
   * {
-    @apply border-border;
+    /* Remove utility not defined: border-border */
   }
   
   body {
-    @apply bg-background text-foreground;
+    /* Replace undefined background/foreground tokens with Tailwind defaults */
+    @apply bg-gray-50 text-gray-900;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
