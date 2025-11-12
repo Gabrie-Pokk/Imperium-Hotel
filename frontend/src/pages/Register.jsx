@@ -88,7 +88,7 @@ const Register = ({ onLogin }) => {
       
       if (response.success) {
         toast.success('Cadastro realizado com sucesso!')
-        onLogin(response.data, 'mock-token') // In a real app, you'd get the token from the response
+        onLogin(response.data, response.token || 'mock-token')
       } else {
         toast.error(response.message || 'Erro ao realizar cadastro')
       }

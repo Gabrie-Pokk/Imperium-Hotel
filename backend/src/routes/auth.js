@@ -34,10 +34,12 @@ router.post('/register', validateUserCreate, async (req, res) => {
     
     const user = await User.create(userData);
     
+    const token = Buffer.from(`${user.id_usuario}-${Date.now()}`).toString('base64');
     res.status(201).json({
       success: true,
       message: 'Usuário cadastrado com sucesso',
       data: user.toJSON(),
+      token,
       code: 'USER_CREATED'
     });
   } catch (error) {
@@ -82,10 +84,12 @@ router.post('/login', validateUserLogin, async (req, res) => {
       });
     }
     
+    const token = Buffer.from(`${user.id_usuario}-${Date.now()}`).toString('base64');
     res.json({
       success: true,
       message: 'Login realizado com sucesso',
       data: user.toJSON(),
+      token,
       code: 'LOGIN_SUCCESS'
     });
   } catch (error) {
