@@ -13,10 +13,14 @@ if (!supabaseUrl || !supabaseServiceKey) {
   const missing = [];
   if (!supabaseUrl) missing.push('SUPABASE_URL');
   if (!supabaseServiceKey) missing.push('SUPABASE_SERVICE_ROLE_KEY');
-  const hint = `Missing Supabase environment variables: ${missing.join(', ')}.\n` +
-    `Ensure a backend/.env file exists with those keys. Example:\n` +
-    `SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co\n` +
-    `SUPABASE_SERVICE_ROLE_KEY=your-service-role-key`;
+  const hint = [
+    `Missing Supabase environment variables: ${missing.join(', ')}.`,
+    `Set these variables in your runtime environment:`,
+    `SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co`,
+    `SUPABASE_SERVICE_ROLE_KEY=your-service-role-key`,
+    `On Render: go to the Web Service -> Environment -> Add Variables`,
+    `Do not use quotes or backticks; paste exact values.`
+  ].join('\n');
   throw new Error(hint);
 }
 
